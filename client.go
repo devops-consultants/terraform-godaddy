@@ -19,6 +19,7 @@ const (
 	mediaTypeJSON       = "application/json"
 	pathDomainRecords   = "%s/v1/domains/%s/records"
 	pathDomains         = "%s/v1/domains/%s"
+	pathZoneRecord      = "%s/v1/domains/%s/records/%s/%s"
 	rateLimit           = 1 * time.Second
 )
 
@@ -123,6 +124,39 @@ func (c *GoDaddyClient) UpdateDomainRecords(customerID, domain string, records [
 	}
 
 	url := fmt.Sprintf(pathDomainRecords, c.baseURL, domain)
+	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(msg))
+	if err != nil {
+		return err
+	}
+
+	return c.execute(customerID, req, nil)
+}
+
+// GetZoneRecord fetches the existing zone record for the provided domain
+func (c *GoDaddyClient) GetZoneRecords(customerID, domain string, rectype string, recname string) ([]*DomainRecord, error) {
+	url := fmt.Sprintf(pathZoneRecord, c.baseURL, domain, rectype, recname)
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	records := make([]*DomainRecord, 0)
+	if err := c.execute(customerID, req, &records); err != nil {
+		return nil, err
+	}
+
+	return records, nil
+}
+
+// UpdateDomainRecords replaces all of the existing records for the provided domain
+func (c *GoDaddyClient) UpdateZoneRecords(customerID, domain string, rectype string, recname string, records []*DomainRecord) error {
+	msg, err := json.Marshal(records)
+	if err != nil {
+		return err
+	}
+
+	url := fmt.Sprintf(pathZoneRecord, c.baseURL, domain, rectype, recname)
 	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(msg))
 	if err != nil {
 		return err
