@@ -33,6 +33,7 @@ func Provider() terraform.ResourceProvider {
 
 		ResourcesMap: map[string]*schema.Resource{
 			"godaddy_domain_record": resourceDomainRecord(),
+			"godaddy_zone_record":   resourceZoneRecord(),
 		},
 
 		ConfigureFunc: providerConfigure,
